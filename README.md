@@ -3,7 +3,7 @@
 `gaiangrid_telemetry` is the Gaian Grid Home Assistant custom integration.
 
 It is the project-specific layer on top of the generic
-[`ha_telemetry`](/ssd2/Gaian/Workspace/ha_telemetry) workflow.
+[`ha_telemetry`](https://github.com/Gaian-Technologies/ha_telemetry) workflow.
 
 The supported setup path is:
 
@@ -15,20 +15,42 @@ The supported setup path is:
 6. Gaian Grid returns broker credentials and topic details
 7. Home Assistant connects directly to the MQTT broker over TLS
 
-The repo root is the install path for Home Assistant. Clone it directly into:
+## Install
+
+### Preferred: HACS Custom Repository
+
+Use HACS for the cleanest install and update path. At this stage, add the
+repo as a custom repository.
+
+1. Make sure HACS is already installed in Home Assistant.
+2. Open `HACS -> Integrations`.
+3. Open the top-right menu, choose `Custom repositories`, and add:
+
+   - Repository: `https://github.com/Gaian-Technologies/gaiangrid_telemetry`
+   - Category: `Integration`
+
+4. Find `Gaian Grid Telemetry` in HACS and download it.
+5. Restart Home Assistant.
+
+### Fallback: Manual Install
+
+If you are not using HACS, copy the repo root into:
 
     /config/custom_components/gaiangrid_telemetry
 
-## Install
+The easiest manual path is usually the Home Assistant `Terminal & SSH`
+add-on web terminal:
 
-1. Clone the repo.
+```bash
+cd /config/custom_components
+git clone https://github.com/Gaian-Technologies/gaiangrid_telemetry.git gaiangrid_telemetry
+```
 
-   ```bash
-   cd /config/custom_components
-   git clone https://github.com/Gaian-Technologies/gaiangrid_telemetry.git gaiangrid_telemetry
-   ```
+You can also download the GitHub ZIP and copy the extracted
+`gaiangrid_telemetry` folder into `/config/custom_components/` using
+`Studio Code Server`, `File editor`, Samba, or another file access method.
 
-2. Restart Home Assistant.
+Restart Home Assistant after installing or updating the integration.
 
 ## Supported Setup
 
