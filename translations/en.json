@@ -1,0 +1,48 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Set up Gaian Grid Telemetry",
+        "description": "Enter your Gaian Grid enrollment token and select the electricity sensors to share. Supported units are voltage (V), frequency (Hz), reactive power (var), and real power (W).",
+        "data": {
+          "enrollment_token": "Enrollment token",
+          "entity_ids": "Gaian Grid electricity sensors",
+          "telemetry_interval_seconds": "Fallback telemetry interval (seconds)",
+          "heartbeat_interval_seconds": "Fallback heartbeat interval (seconds)"
+        }
+      },
+      "reauth": {
+        "title": "Refresh Gaian Grid credentials",
+        "description": "Enter a fresh enrollment token to rotate the broker credentials for this Gaian Grid site.",
+        "data": {
+          "enrollment_token": "Enrollment token"
+        }
+      },
+      "reconfigure": {
+        "title": "Reconfigure Gaian Grid telemetry",
+        "description": "Update the local Gaian Grid entity selection and publish intervals.",
+        "data": {
+          "entity_ids": "Gaian Grid electricity sensors",
+          "telemetry_interval_seconds": "Fallback telemetry interval (seconds)",
+          "heartbeat_interval_seconds": "Fallback heartbeat interval (seconds)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Enrollment succeeded, but Home Assistant could not connect to the MQTT broker returned by the hub.",
+      "cannot_reach_hub": "Could not reach Gaian Grid. Check public reachability to https://gaiangrid.com and the deployed service health.",
+      "entity_ids_required": "Select at least one supported electricity sensor.",
+      "hub_rejected_enrollment": "The hub rejected the enrollment request.",
+      "hub_request_failed": "The hub request failed before enrollment could complete.",
+      "hub_timeout": "Timed out waiting for the hub to respond.",
+      "invalid_enrollment_response": "The hub returned an invalid enrollment response.",
+      "invalid_enrollment_token": "The enrollment token is invalid, expired, revoked, or already used.",
+      "invalid_hub_url": "The configured Gaian Grid URL is invalid.",
+      "unsupported_entity_selection": "Only electricity sensors with units V, Hz, var, or W are supported.",
+      "unsupported_mqtt_transport": "The hub returned an unsupported MQTT transport. This integration supports MQTT over TLS on TCP only."
+    },
+    "abort": {
+      "already_configured": "This site ID is already configured."
+    }
+  }
+}
