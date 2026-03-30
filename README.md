@@ -5,6 +5,10 @@
 It is the project-specific layer on top of the generic
 [`ha_telemetry`](https://github.com/Gaian-Technologies/ha_telemetry) workflow.
 
+It is not the generic starting point for open-source adopters. If you want a
+reusable integration for your own Hub deployment, start with
+[`ha_telemetry`](/ssd2/Gaian/Workspace/ha_telemetry) instead.
+
 The supported setup path is:
 
 1. install the integration in Home Assistant
