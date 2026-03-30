@@ -40,7 +40,12 @@ You can also download the GitHub ZIP and copy the extracted
 `gaiangrid_telemetry` folder into `/config/custom_components/` using
 `Studio Code Server`, `File editor`, Samba, or another file access method.
 
-Restart Home Assistant after installing or updating the integration.
+Reboot Home Assistant after installing or updating the integration. If you are
+using a terminal, the simplest path is usually:
+
+```bash
+sudo reboot
+```
 
 ### Optional: HACS Custom Repository
 
@@ -55,7 +60,7 @@ instead.
    - Category: `Integration`
 
 4. Find `Gaian Grid Telemetry` in HACS and download it.
-5. Restart Home Assistant.
+5. Reboot Home Assistant.
 
 ## Supported Setup
 
