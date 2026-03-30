@@ -72,18 +72,32 @@ instead.
 4. Find `Gaian Grid Telemetry` in HACS and download it.
 5. Restart Home Assistant.
 
+## Add The Integration
+
+After Home Assistant has restarted:
+
+1. Open `Settings`.
+2. Open `Devices & Services`.
+3. Open the `Integrations` tab.
+4. Click `Add Integration`.
+5. Search for `Gaian Grid Telemetry`.
+6. Select the integration and continue through the setup form.
+
+In the form, enter:
+
+- Enrollment token
+- Gaian Grid electricity sensors
+- Fallback telemetry interval
+- Fallback heartbeat interval
+
 ## Supported Setup
 
 This integration is fixed to the Gaian Grid public Hub URL:
 
 - `https://gaiangrid.com`
 
-The setup flow asks only for:
-
-- Enrollment token
-- Gaian Grid electricity sensors
-- Fallback telemetry interval
-- Fallback heartbeat interval
+The setup flow asks only for the enrollment token, the selected electricity
+sensors, and the fallback telemetry and heartbeat intervals.
 
 ## Supported Sensors
 
