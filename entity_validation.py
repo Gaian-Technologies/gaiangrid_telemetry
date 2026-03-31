@@ -4,22 +4,45 @@ from __future__ import annotations
 
 from homeassistant.core import HomeAssistant
 
-SUPPORTED_UNITS: frozenset[str] = frozenset({"V", "Hz", "var", "W"})
+from .const import (
+    CONF_ADDITIONAL_POWER_ENTITY_IDS,
+    CONF_GRID_EXPORT_POWER_ENTITY_IDS,
+    CONF_GRID_FREQUENCY_ENTITY_IDS,
+    CONF_GRID_IMPORT_POWER_ENTITY_IDS,
+    CONF_GRID_NET_POWER_ENTITY_IDS,
+    CONF_GRID_VOLTAGE_ENTITY_IDS,
+    CONF_REACTIVE_POWER_ENTITY_IDS,
+)
 
 
-def validate_selected_entities(hass: HomeAssistant, entity_ids: tuple[str, ...]) -> str | None:
-    """Require electricity sensors with Gaian Grid's supported units."""
+EXPECTED_UNIT_BY_FIELD: dict[str, tuple[str, str]] = {
+    CONF_GRID_VOLTAGE_ENTITY_IDS: ("V", "unsupported_voltage_selection"),
+    CONF_GRID_FREQUENCY_ENTITY_IDS: ("Hz", "unsupported_frequency_selection"),
+    CONF_GRID_NET_POWER_ENTITY_IDS: ("W", "unsupported_power_selection"),
+    CONF_GRID_IMPORT_POWER_ENTITY_IDS: ("W", "unsupported_power_selection"),
+    CONF_GRID_EXPORT_POWER_ENTITY_IDS: ("W", "unsupported_power_selection"),
+    CONF_ADDITIONAL_POWER_ENTITY_IDS: ("W", "unsupported_power_selection"),
+    CONF_REACTIVE_POWER_ENTITY_IDS: ("var", "unsupported_reactive_power_selection"),
+}
 
-    for entity_id in entity_ids:
-        if not entity_id.startswith("sensor."):
-            return "unsupported_entity_selection"
 
-        state = hass.states.get(entity_id)
-        if state is None:
-            return "unsupported_entity_selection"
+def validate_selected_entities(
+    hass: HomeAssistant,
+    selections: dict[str, tuple[str, ...]],
+) -> str | None:
+    """Require the expected sensor unit for each explicit Gaian Grid field."""
 
-        unit = str(state.attributes.get("unit_of_measurement", "")).strip()
-        if unit not in SUPPORTED_UNITS:
-            return "unsupported_entity_selection"
+    for key, (expected_unit, error_key) in EXPECTED_UNIT_BY_FIELD.items():
+        for entity_id in selections.get(key, ()):
+            if not entity_id.startswith("sensor."):
+                return error_key
+
+            state = hass.states.get(entity_id)
+            if state is None:
+                return error_key
+
+            unit = str(state.attributes.get("unit_of_measurement", "")).strip()
+            if unit != expected_unit:
+                return error_key
 
     return None

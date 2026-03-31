@@ -4,14 +4,37 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 
-from .const import DOMAIN
+from .const import CONF_ENTITY_IDS, DOMAIN, ENTITY_SELECTION_CONFIG_KEYS
 from .manager import TelemetryManager
-from .models import EntrySettings
+from .models import EntrySettings, classify_legacy_entity_ids
 from .mqtt_client import MqttAuthenticationError, MqttConnectionError
 
 
 async def async_setup(hass: HomeAssistant, _config: dict) -> bool:
     hass.data.setdefault(DOMAIN, {})
+    return True
+
+
+async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    if entry.version >= 2:
+        return True
+
+    migrated_data = dict(entry.data)
+    migrated_options = dict(entry.options)
+
+    for payload in (migrated_data, migrated_options):
+        legacy_entity_ids = payload.pop(CONF_ENTITY_IDS, [])
+        if legacy_entity_ids:
+            payload.update(classify_legacy_entity_ids(hass, legacy_entity_ids))
+        for key in ENTITY_SELECTION_CONFIG_KEYS:
+            payload.setdefault(key, [])
+
+    hass.config_entries.async_update_entry(
+        entry,
+        data=migrated_data,
+        options=migrated_options,
+        version=2,
+    )
     return True
 
 

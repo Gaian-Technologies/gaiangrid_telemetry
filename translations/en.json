@@ -3,10 +3,16 @@
     "step": {
       "user": {
         "title": "Set up Gaian Grid Telemetry",
-        "description": "Enter your Gaian Grid enrollment token and select the electricity sensors to share. Supported units are voltage (V), frequency (Hz), reactive power (var), and real power (W).",
+        "description": "Enter your Gaian Grid enrollment token and choose the electricity sensors you can share. Not all sensors are required, but whole-grid voltage, frequency, and power are preferred when available. Even a single voltage sensor from a smart plug helps. Use either whole-grid net power sensors with positive import and negative export, or separate whole-grid import and export sensors. Additional power sensors are allowed, but they are not used as whole-grid import/export totals.",
         "data": {
           "enrollment_token": "Enrollment token",
-          "entity_ids": "Gaian Grid electricity sensors",
+          "grid_voltage_entity_ids": "Grid voltage sensors (V)",
+          "grid_frequency_entity_ids": "Grid frequency sensors (Hz)",
+          "grid_net_power_entity_ids": "Whole-grid net power sensors (W, import positive / export negative)",
+          "grid_import_power_entity_ids": "Whole-grid import power sensors (W)",
+          "grid_export_power_entity_ids": "Whole-grid export power sensors (W)",
+          "additional_power_entity_ids": "Additional electricity power sensors (W)",
+          "reactive_power_entity_ids": "Reactive power sensors (var)",
           "telemetry_interval_seconds": "Fallback telemetry interval (seconds)",
           "heartbeat_interval_seconds": "Fallback heartbeat interval (seconds)"
         }
@@ -20,9 +26,15 @@
       },
       "reconfigure": {
         "title": "Reconfigure Gaian Grid telemetry",
-        "description": "Update the local Gaian Grid entity selection and publish intervals.",
+        "description": "Update the local Gaian Grid sensor selection and publish intervals. Whole-grid voltage, frequency, and power are preferred when available. Even a single voltage sensor still helps.",
         "data": {
-          "entity_ids": "Gaian Grid electricity sensors",
+          "grid_voltage_entity_ids": "Grid voltage sensors (V)",
+          "grid_frequency_entity_ids": "Grid frequency sensors (Hz)",
+          "grid_net_power_entity_ids": "Whole-grid net power sensors (W, import positive / export negative)",
+          "grid_import_power_entity_ids": "Whole-grid import power sensors (W)",
+          "grid_export_power_entity_ids": "Whole-grid export power sensors (W)",
+          "additional_power_entity_ids": "Additional electricity power sensors (W)",
+          "reactive_power_entity_ids": "Reactive power sensors (var)",
           "telemetry_interval_seconds": "Fallback telemetry interval (seconds)",
           "heartbeat_interval_seconds": "Fallback heartbeat interval (seconds)"
         }
@@ -31,14 +43,19 @@
     "error": {
       "cannot_connect": "Enrollment succeeded, but Home Assistant could not connect to the MQTT broker returned by the hub.",
       "cannot_reach_hub": "Could not reach Gaian Grid. Check public reachability to https://gaiangrid.com and the deployed service health.",
-      "entity_ids_required": "Select at least one supported electricity sensor.",
+      "sensor_selection_required": "Select at least one supported electricity sensor.",
+      "duplicate_sensor_selection": "Each sensor can only be selected once.",
+      "conflicting_grid_power_selection": "Choose either whole-grid net power sensors or separate whole-grid import/export sensors, not both.",
       "hub_rejected_enrollment": "The hub rejected the enrollment request.",
       "hub_request_failed": "The hub request failed before enrollment could complete.",
       "hub_timeout": "Timed out waiting for the hub to respond.",
       "invalid_enrollment_response": "The hub returned an invalid enrollment response.",
       "invalid_enrollment_token": "The enrollment token is invalid, expired, revoked, or already used.",
       "invalid_hub_url": "The configured Gaian Grid URL is invalid.",
-      "unsupported_entity_selection": "Only electricity sensors with units V, Hz, var, or W are supported.",
+      "unsupported_voltage_selection": "Grid voltage sensors must use V.",
+      "unsupported_frequency_selection": "Grid frequency sensors must use Hz.",
+      "unsupported_power_selection": "Whole-grid and additional power sensors must use W.",
+      "unsupported_reactive_power_selection": "Reactive power sensors must use var.",
       "unsupported_mqtt_transport": "The hub returned an unsupported MQTT transport. This integration supports MQTT over TLS on TCP only."
     },
     "abort": {

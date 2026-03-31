@@ -45,7 +45,7 @@ def build_reported_payload(settings: EntrySettings, desired: DesiredConfig, conn
         "schema": REPORTED_SCHEMA,
         "site_id": settings.site_id,
         "connected": connected,
-        "selected_entities": list(settings.entity_ids),
+        "selected_entities": list(settings.all_entity_ids),
         "telemetry_enabled": desired.enabled,
         "telemetry_interval_seconds": desired.telemetry_interval_seconds,
         "heartbeat_interval_seconds": desired.heartbeat_interval_seconds,

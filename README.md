@@ -14,7 +14,7 @@ The supported setup path is:
 1. install the integration in Home Assistant
 2. request an enrollment token from `https://gaiangrid.com/enroll`
 3. enter the enrollment token
-4. select the supported electricity sensors to share
+4. choose the supported electricity sensors to share
 5. Home Assistant enrolls against `https://gaiangrid.com`
 6. Gaian Grid returns broker credentials and topic details
 7. Home Assistant connects directly to the MQTT broker over TLS
@@ -101,7 +101,10 @@ After Home Assistant has restarted:
 In the form, enter:
 
 - Enrollment token
-- Gaian Grid electricity sensors
+- Grid voltage sensors when available
+- Grid frequency sensors when available
+- Whole-grid power sensors if you have CTs or inverter/grid measurements
+- Additional electricity power sensors if they are useful to share
 - Fallback telemetry interval
 - Fallback heartbeat interval
 
@@ -111,21 +114,37 @@ This integration is fixed to the Gaian Grid public Hub URL:
 
 - `https://gaiangrid.com`
 
-The setup flow asks only for the enrollment token, the selected electricity
-sensors, and the fallback telemetry and heartbeat intervals.
+The setup flow asks only for:
+
+- the enrollment token
+- the selected electricity sensors
+- the fallback telemetry interval
+- the fallback heartbeat interval
+
+Not all sensor fields are required. Whole-grid voltage, frequency, and power
+are preferred if available, but even a single voltage measurement from a smart
+plug helps.
 
 ## Supported Sensors
 
-Gaian Grid currently accepts only electricity sensors with these units:
+Gaian Grid currently accepts electricity sensors in these roles:
 
-- voltage: `V`
-- frequency: `Hz`
-- reactive power: `var`
-- real power: `W`
+- grid voltage sensors: `V`
+- grid frequency sensors: `Hz`
+- whole-grid net power sensors: `W`
+  - use these when positive means import and negative means export
+- whole-grid import power sensors: `W`
+- whole-grid export power sensors: `W`
+- additional electricity power sensors: `W`
+- reactive power sensors: `var`
 
-That means the initial integration selection is intentionally narrow. The
-target use case is grid-relevant electricity telemetry such as voltage,
-frequency, and real or reactive power measurements.
+Whole-grid power is the preferred input for Gaian Grid public summaries.
+Additional electricity power sensors are still useful for research and future
+analysis, but they are not treated as whole-grid import/export totals.
+
+Do not select duplicate sensors for the same whole-grid measurement. If you
+already have separate whole-grid import and export sensors, use those instead
+of also selecting a whole-grid net power sensor.
 
 ## Notes
 
