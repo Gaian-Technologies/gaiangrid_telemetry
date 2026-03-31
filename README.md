@@ -152,10 +152,8 @@ Gaian Grid currently accepts electricity sensors in these roles:
 - PCC export power sensors: `W`
 - additional electricity power sensors: `W`
 
-PCC power is the preferred input for Gaian Grid public summaries. Additional
-electricity power sensors are assumed to sit downstream of the PCC when PCC
-power is also provided. They are useful for research and future analysis, but
-they are not treated as PCC import/export totals.
+PCC power is the preferred input for Gaian Grid Telemetry. If you do
+not have PCC power sensors, additional electricity power sensors are still useful.
 
 Do not select duplicate sensors for the same PCC measurement. If you already
 have separate PCC import and export sensors, use those instead of also
