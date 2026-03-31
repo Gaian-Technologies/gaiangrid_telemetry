@@ -15,7 +15,6 @@ from homeassistant.helpers.event import async_track_time_interval
 from .const import (
     ATTR_GAIAN_POWER_SIGN_CONVENTION,
     ATTR_GAIAN_SIGNAL_ROLE,
-    SIGNAL_ROLE_BATTERY_POWER_NET,
     SIGNAL_ROLE_GRID_POWER_NET,
     TELEMETRY_ATTRIBUTE_ALLOWLIST,
 )
@@ -180,8 +179,6 @@ class TelemetryManager:
         }
         if selection.signal_role == SIGNAL_ROLE_GRID_POWER_NET:
             gaian_attributes[ATTR_GAIAN_POWER_SIGN_CONVENTION] = self.settings.grid_net_power_sign_convention
-        elif selection.signal_role == SIGNAL_ROLE_BATTERY_POWER_NET:
-            gaian_attributes[ATTR_GAIAN_POWER_SIGN_CONVENTION] = self.settings.battery_net_power_sign_convention
 
         if state is None:
             return {

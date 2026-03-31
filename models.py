@@ -13,10 +13,6 @@ from .const import (
     CONF_ADDITIONAL_POWER_ENTITY_IDS,
     CONF_ADDITIONAL_FREQUENCY_ENTITY_IDS,
     CONF_ADDITIONAL_VOLTAGE_ENTITY_IDS,
-    CONF_BATTERY_CHARGE_POWER_ENTITY_IDS,
-    CONF_BATTERY_DISCHARGE_POWER_ENTITY_IDS,
-    CONF_BATTERY_NET_POWER_ENTITY_IDS,
-    CONF_BATTERY_NET_POWER_SIGN_CONVENTION,
     CONF_ENTITY_IDS,
     CONF_GRID_EXPORT_POWER_ENTITY_IDS,
     CONF_GRID_FREQUENCY_ENTITY_IDS,
@@ -28,11 +24,7 @@ from .const import (
     CONF_HUB_URL,
     CONF_MQTT_PASSWORD,
     CONF_MQTT_USERNAME,
-    BATTERY_POWER_SIGN_CHARGE_NEGATIVE_DISCHARGE_POSITIVE,
-    BATTERY_POWER_SIGN_CHARGE_POSITIVE_DISCHARGE_NEGATIVE,
-    DEFAULT_BATTERY_NET_POWER_SIGN_CONVENTION,
     DEFAULT_GRID_NET_POWER_SIGN_CONVENTION,
-    CONF_REACTIVE_POWER_ENTITY_IDS,
     CONF_SITE_ID,
     CONF_TELEMETRY_INTERVAL_SECONDS,
     CONF_TOPIC_PREFIX,
@@ -44,9 +36,6 @@ from .const import (
     FIXED_HUB_URL,
     GRID_POWER_SIGN_IMPORT_NEGATIVE_EXPORT_POSITIVE,
     GRID_POWER_SIGN_IMPORT_POSITIVE_EXPORT_NEGATIVE,
-    SIGNAL_ROLE_BATTERY_POWER_CHARGE,
-    SIGNAL_ROLE_BATTERY_POWER_DISCHARGE,
-    SIGNAL_ROLE_BATTERY_POWER_NET,
     SIGNAL_ROLE_FREQUENCY_AUX,
     SIGNAL_ROLE_GRID_FREQUENCY,
     SIGNAL_ROLE_GRID_POWER_EXPORT,
@@ -54,7 +43,6 @@ from .const import (
     SIGNAL_ROLE_GRID_POWER_NET,
     SIGNAL_ROLE_GRID_VOLTAGE,
     SIGNAL_ROLE_POWER_AUX,
-    SIGNAL_ROLE_REACTIVE_POWER,
     SIGNAL_ROLE_VOLTAGE_AUX,
     TRANSPORT_TCP,
 )
@@ -89,10 +77,6 @@ def classify_legacy_entity_ids(hass: HomeAssistant, entity_ids: list[str] | tupl
         CONF_GRID_IMPORT_POWER_ENTITY_IDS: [],
         CONF_GRID_EXPORT_POWER_ENTITY_IDS: [],
         CONF_ADDITIONAL_POWER_ENTITY_IDS: [],
-        CONF_BATTERY_NET_POWER_ENTITY_IDS: [],
-        CONF_BATTERY_CHARGE_POWER_ENTITY_IDS: [],
-        CONF_BATTERY_DISCHARGE_POWER_ENTITY_IDS: [],
-        CONF_REACTIVE_POWER_ENTITY_IDS: [],
     }
 
     for entity_id in normalize_entity_ids(entity_ids):
@@ -102,8 +86,6 @@ def classify_legacy_entity_ids(hass: HomeAssistant, entity_ids: list[str] | tupl
             selections[CONF_GRID_VOLTAGE_ENTITY_IDS].append(entity_id)
         elif unit == "Hz":
             selections[CONF_GRID_FREQUENCY_ENTITY_IDS].append(entity_id)
-        elif unit == "var":
-            selections[CONF_REACTIVE_POWER_ENTITY_IDS].append(entity_id)
         elif unit == "W":
             # Legacy entries only had a single flat selector, so the least
             # surprising migration is to preserve existing Gaian Grid behavior
@@ -142,11 +124,6 @@ class EntrySettings:
     grid_import_power_entity_ids: tuple[str, ...]
     grid_export_power_entity_ids: tuple[str, ...]
     additional_power_entity_ids: tuple[str, ...]
-    battery_net_power_entity_ids: tuple[str, ...]
-    battery_net_power_sign_convention: str
-    battery_charge_power_entity_ids: tuple[str, ...]
-    battery_discharge_power_entity_ids: tuple[str, ...]
-    reactive_power_entity_ids: tuple[str, ...]
     telemetry_interval_seconds: int
     heartbeat_interval_seconds: int
 
@@ -166,10 +143,6 @@ class EntrySettings:
             (SIGNAL_ROLE_GRID_POWER_IMPORT, self.grid_import_power_entity_ids),
             (SIGNAL_ROLE_GRID_POWER_EXPORT, self.grid_export_power_entity_ids),
             (SIGNAL_ROLE_POWER_AUX, self.additional_power_entity_ids),
-            (SIGNAL_ROLE_BATTERY_POWER_NET, self.battery_net_power_entity_ids),
-            (SIGNAL_ROLE_BATTERY_POWER_CHARGE, self.battery_charge_power_entity_ids),
-            (SIGNAL_ROLE_BATTERY_POWER_DISCHARGE, self.battery_discharge_power_entity_ids),
-            (SIGNAL_ROLE_REACTIVE_POWER, self.reactive_power_entity_ids),
         ):
             ordered.extend(
                 TelemetrySelection(entity_id=entity_id, signal_role=signal_role)
@@ -228,18 +201,6 @@ class EntrySettings:
             grid_import_power_entity_ids=_role_entity_ids(normalized_data, CONF_GRID_IMPORT_POWER_ENTITY_IDS),
             grid_export_power_entity_ids=_role_entity_ids(normalized_data, CONF_GRID_EXPORT_POWER_ENTITY_IDS),
             additional_power_entity_ids=_role_entity_ids(normalized_data, CONF_ADDITIONAL_POWER_ENTITY_IDS),
-            battery_net_power_entity_ids=_role_entity_ids(normalized_data, CONF_BATTERY_NET_POWER_ENTITY_IDS),
-            battery_net_power_sign_convention=_normalized_choice(
-                normalized_data.get(CONF_BATTERY_NET_POWER_SIGN_CONVENTION),
-                DEFAULT_BATTERY_NET_POWER_SIGN_CONVENTION,
-                {
-                    BATTERY_POWER_SIGN_CHARGE_POSITIVE_DISCHARGE_NEGATIVE,
-                    BATTERY_POWER_SIGN_CHARGE_NEGATIVE_DISCHARGE_POSITIVE,
-                },
-            ),
-            battery_charge_power_entity_ids=_role_entity_ids(normalized_data, CONF_BATTERY_CHARGE_POWER_ENTITY_IDS),
-            battery_discharge_power_entity_ids=_role_entity_ids(normalized_data, CONF_BATTERY_DISCHARGE_POWER_ENTITY_IDS),
-            reactive_power_entity_ids=_role_entity_ids(normalized_data, CONF_REACTIVE_POWER_ENTITY_IDS),
             telemetry_interval_seconds=_positive_int(
                 normalized_data.get(CONF_TELEMETRY_INTERVAL_SECONDS),
                 DEFAULT_TELEMETRY_INTERVAL_SECONDS,
