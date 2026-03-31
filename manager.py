@@ -12,7 +12,13 @@ from homeassistant.const import STATE_UNAVAILABLE, STATE_UNKNOWN
 from homeassistant.core import HomeAssistant, State
 from homeassistant.helpers.event import async_track_time_interval
 
-from .const import ATTR_GAIAN_SIGNAL_ROLE, TELEMETRY_ATTRIBUTE_ALLOWLIST
+from .const import (
+    ATTR_GAIAN_POWER_SIGN_CONVENTION,
+    ATTR_GAIAN_SIGNAL_ROLE,
+    SIGNAL_ROLE_BATTERY_POWER_NET,
+    SIGNAL_ROLE_GRID_POWER_NET,
+    TELEMETRY_ATTRIBUTE_ALLOWLIST,
+)
 from .models import DesiredConfig, EntrySettings, TelemetrySelection
 from .mqtt_client import TelemetryMqttClient
 from .protocol import (
@@ -169,14 +175,20 @@ class TelemetryManager:
         ]
 
     def _serialize_state(self, selection: TelemetrySelection, state: State | None) -> dict[str, Any]:
+        gaian_attributes = {
+            ATTR_GAIAN_SIGNAL_ROLE: selection.signal_role,
+        }
+        if selection.signal_role == SIGNAL_ROLE_GRID_POWER_NET:
+            gaian_attributes[ATTR_GAIAN_POWER_SIGN_CONVENTION] = self.settings.grid_net_power_sign_convention
+        elif selection.signal_role == SIGNAL_ROLE_BATTERY_POWER_NET:
+            gaian_attributes[ATTR_GAIAN_POWER_SIGN_CONVENTION] = self.settings.battery_net_power_sign_convention
+
         if state is None:
             return {
                 "entity_id": selection.entity_id,
                 "state": STATE_UNKNOWN,
                 "available": False,
-                "attributes": {
-                    ATTR_GAIAN_SIGNAL_ROLE: selection.signal_role,
-                },
+                "attributes": gaian_attributes,
                 "last_changed": None,
                 "last_updated": None,
             }
@@ -188,7 +200,7 @@ class TelemetryManager:
             for key in TELEMETRY_ATTRIBUTE_ALLOWLIST
             if key in state.attributes
         }
-        attributes[ATTR_GAIAN_SIGNAL_ROLE] = selection.signal_role
+        attributes.update(gaian_attributes)
 
         return {
             "entity_id": selection.entity_id,

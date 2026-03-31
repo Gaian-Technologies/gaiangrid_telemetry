@@ -11,16 +11,27 @@ from homeassistant.core import HomeAssistant
 
 from .const import (
     CONF_ADDITIONAL_POWER_ENTITY_IDS,
+    CONF_ADDITIONAL_FREQUENCY_ENTITY_IDS,
+    CONF_ADDITIONAL_VOLTAGE_ENTITY_IDS,
+    CONF_BATTERY_CHARGE_POWER_ENTITY_IDS,
+    CONF_BATTERY_DISCHARGE_POWER_ENTITY_IDS,
+    CONF_BATTERY_NET_POWER_ENTITY_IDS,
+    CONF_BATTERY_NET_POWER_SIGN_CONVENTION,
     CONF_ENTITY_IDS,
     CONF_GRID_EXPORT_POWER_ENTITY_IDS,
     CONF_GRID_FREQUENCY_ENTITY_IDS,
     CONF_GRID_IMPORT_POWER_ENTITY_IDS,
     CONF_GRID_NET_POWER_ENTITY_IDS,
+    CONF_GRID_NET_POWER_SIGN_CONVENTION,
     CONF_GRID_VOLTAGE_ENTITY_IDS,
     CONF_HEARTBEAT_INTERVAL_SECONDS,
     CONF_HUB_URL,
     CONF_MQTT_PASSWORD,
     CONF_MQTT_USERNAME,
+    BATTERY_POWER_SIGN_CHARGE_NEGATIVE_DISCHARGE_POSITIVE,
+    BATTERY_POWER_SIGN_CHARGE_POSITIVE_DISCHARGE_NEGATIVE,
+    DEFAULT_BATTERY_NET_POWER_SIGN_CONVENTION,
+    DEFAULT_GRID_NET_POWER_SIGN_CONVENTION,
     CONF_REACTIVE_POWER_ENTITY_IDS,
     CONF_SITE_ID,
     CONF_TELEMETRY_INTERVAL_SECONDS,
@@ -31,6 +42,12 @@ from .const import (
     DEFAULT_TOPIC_PREFIX,
     ENTITY_ROLE_TO_CONFIG_KEY,
     FIXED_HUB_URL,
+    GRID_POWER_SIGN_IMPORT_NEGATIVE_EXPORT_POSITIVE,
+    GRID_POWER_SIGN_IMPORT_POSITIVE_EXPORT_NEGATIVE,
+    SIGNAL_ROLE_BATTERY_POWER_CHARGE,
+    SIGNAL_ROLE_BATTERY_POWER_DISCHARGE,
+    SIGNAL_ROLE_BATTERY_POWER_NET,
+    SIGNAL_ROLE_FREQUENCY_AUX,
     SIGNAL_ROLE_GRID_FREQUENCY,
     SIGNAL_ROLE_GRID_POWER_EXPORT,
     SIGNAL_ROLE_GRID_POWER_IMPORT,
@@ -38,6 +55,7 @@ from .const import (
     SIGNAL_ROLE_GRID_VOLTAGE,
     SIGNAL_ROLE_POWER_AUX,
     SIGNAL_ROLE_REACTIVE_POWER,
+    SIGNAL_ROLE_VOLTAGE_AUX,
     TRANSPORT_TCP,
 )
 
@@ -54,14 +72,26 @@ def _positive_int(value: Any, default: int) -> int:
     return max(1, parsed)
 
 
+def _normalized_choice(value: Any, default: str, allowed: set[str]) -> str:
+    parsed = str(value).strip()
+    if parsed in allowed:
+        return parsed
+    return default
+
+
 def classify_legacy_entity_ids(hass: HomeAssistant, entity_ids: list[str] | tuple[str, ...]) -> dict[str, list[str]]:
     selections: dict[str, list[str]] = {
         CONF_GRID_VOLTAGE_ENTITY_IDS: [],
+        CONF_ADDITIONAL_VOLTAGE_ENTITY_IDS: [],
         CONF_GRID_FREQUENCY_ENTITY_IDS: [],
+        CONF_ADDITIONAL_FREQUENCY_ENTITY_IDS: [],
         CONF_GRID_NET_POWER_ENTITY_IDS: [],
         CONF_GRID_IMPORT_POWER_ENTITY_IDS: [],
         CONF_GRID_EXPORT_POWER_ENTITY_IDS: [],
         CONF_ADDITIONAL_POWER_ENTITY_IDS: [],
+        CONF_BATTERY_NET_POWER_ENTITY_IDS: [],
+        CONF_BATTERY_CHARGE_POWER_ENTITY_IDS: [],
+        CONF_BATTERY_DISCHARGE_POWER_ENTITY_IDS: [],
         CONF_REACTIVE_POWER_ENTITY_IDS: [],
     }
 
@@ -104,11 +134,18 @@ class EntrySettings:
     mqtt_username: str
     mqtt_password: str
     grid_voltage_entity_ids: tuple[str, ...]
+    additional_voltage_entity_ids: tuple[str, ...]
     grid_frequency_entity_ids: tuple[str, ...]
+    additional_frequency_entity_ids: tuple[str, ...]
     grid_net_power_entity_ids: tuple[str, ...]
+    grid_net_power_sign_convention: str
     grid_import_power_entity_ids: tuple[str, ...]
     grid_export_power_entity_ids: tuple[str, ...]
     additional_power_entity_ids: tuple[str, ...]
+    battery_net_power_entity_ids: tuple[str, ...]
+    battery_net_power_sign_convention: str
+    battery_charge_power_entity_ids: tuple[str, ...]
+    battery_discharge_power_entity_ids: tuple[str, ...]
     reactive_power_entity_ids: tuple[str, ...]
     telemetry_interval_seconds: int
     heartbeat_interval_seconds: int
@@ -122,11 +159,16 @@ class EntrySettings:
         ordered: list[TelemetrySelection] = []
         for signal_role, entity_ids in (
             (SIGNAL_ROLE_GRID_VOLTAGE, self.grid_voltage_entity_ids),
+            (SIGNAL_ROLE_VOLTAGE_AUX, self.additional_voltage_entity_ids),
             (SIGNAL_ROLE_GRID_FREQUENCY, self.grid_frequency_entity_ids),
+            (SIGNAL_ROLE_FREQUENCY_AUX, self.additional_frequency_entity_ids),
             (SIGNAL_ROLE_GRID_POWER_NET, self.grid_net_power_entity_ids),
             (SIGNAL_ROLE_GRID_POWER_IMPORT, self.grid_import_power_entity_ids),
             (SIGNAL_ROLE_GRID_POWER_EXPORT, self.grid_export_power_entity_ids),
             (SIGNAL_ROLE_POWER_AUX, self.additional_power_entity_ids),
+            (SIGNAL_ROLE_BATTERY_POWER_NET, self.battery_net_power_entity_ids),
+            (SIGNAL_ROLE_BATTERY_POWER_CHARGE, self.battery_charge_power_entity_ids),
+            (SIGNAL_ROLE_BATTERY_POWER_DISCHARGE, self.battery_discharge_power_entity_ids),
             (SIGNAL_ROLE_REACTIVE_POWER, self.reactive_power_entity_ids),
         ):
             ordered.extend(
@@ -171,11 +213,32 @@ class EntrySettings:
             mqtt_username=str(normalized_data[CONF_MQTT_USERNAME]).strip(),
             mqtt_password=str(normalized_data[CONF_MQTT_PASSWORD]),
             grid_voltage_entity_ids=_role_entity_ids(normalized_data, CONF_GRID_VOLTAGE_ENTITY_IDS),
+            additional_voltage_entity_ids=_role_entity_ids(normalized_data, CONF_ADDITIONAL_VOLTAGE_ENTITY_IDS),
             grid_frequency_entity_ids=_role_entity_ids(normalized_data, CONF_GRID_FREQUENCY_ENTITY_IDS),
+            additional_frequency_entity_ids=_role_entity_ids(normalized_data, CONF_ADDITIONAL_FREQUENCY_ENTITY_IDS),
             grid_net_power_entity_ids=_role_entity_ids(normalized_data, CONF_GRID_NET_POWER_ENTITY_IDS),
+            grid_net_power_sign_convention=_normalized_choice(
+                normalized_data.get(CONF_GRID_NET_POWER_SIGN_CONVENTION),
+                DEFAULT_GRID_NET_POWER_SIGN_CONVENTION,
+                {
+                    GRID_POWER_SIGN_IMPORT_POSITIVE_EXPORT_NEGATIVE,
+                    GRID_POWER_SIGN_IMPORT_NEGATIVE_EXPORT_POSITIVE,
+                },
+            ),
             grid_import_power_entity_ids=_role_entity_ids(normalized_data, CONF_GRID_IMPORT_POWER_ENTITY_IDS),
             grid_export_power_entity_ids=_role_entity_ids(normalized_data, CONF_GRID_EXPORT_POWER_ENTITY_IDS),
             additional_power_entity_ids=_role_entity_ids(normalized_data, CONF_ADDITIONAL_POWER_ENTITY_IDS),
+            battery_net_power_entity_ids=_role_entity_ids(normalized_data, CONF_BATTERY_NET_POWER_ENTITY_IDS),
+            battery_net_power_sign_convention=_normalized_choice(
+                normalized_data.get(CONF_BATTERY_NET_POWER_SIGN_CONVENTION),
+                DEFAULT_BATTERY_NET_POWER_SIGN_CONVENTION,
+                {
+                    BATTERY_POWER_SIGN_CHARGE_POSITIVE_DISCHARGE_NEGATIVE,
+                    BATTERY_POWER_SIGN_CHARGE_NEGATIVE_DISCHARGE_POSITIVE,
+                },
+            ),
+            battery_charge_power_entity_ids=_role_entity_ids(normalized_data, CONF_BATTERY_CHARGE_POWER_ENTITY_IDS),
+            battery_discharge_power_entity_ids=_role_entity_ids(normalized_data, CONF_BATTERY_DISCHARGE_POWER_ENTITY_IDS),
             reactive_power_entity_ids=_role_entity_ids(normalized_data, CONF_REACTIVE_POWER_ENTITY_IDS),
             telemetry_interval_seconds=_positive_int(
                 normalized_data.get(CONF_TELEMETRY_INTERVAL_SECONDS),

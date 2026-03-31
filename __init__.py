@@ -4,7 +4,15 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 
-from .const import CONF_ENTITY_IDS, DOMAIN, ENTITY_SELECTION_CONFIG_KEYS
+from .const import (
+    CONF_BATTERY_NET_POWER_SIGN_CONVENTION,
+    CONF_ENTITY_IDS,
+    CONF_GRID_NET_POWER_SIGN_CONVENTION,
+    DEFAULT_BATTERY_NET_POWER_SIGN_CONVENTION,
+    DEFAULT_GRID_NET_POWER_SIGN_CONVENTION,
+    DOMAIN,
+    ENTITY_SELECTION_CONFIG_KEYS,
+)
 from .manager import TelemetryManager
 from .models import EntrySettings, classify_legacy_entity_ids
 from .mqtt_client import MqttAuthenticationError, MqttConnectionError
@@ -16,7 +24,7 @@ async def async_setup(hass: HomeAssistant, _config: dict) -> bool:
 
 
 async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    if entry.version >= 2:
+    if entry.version >= 3:
         return True
 
     migrated_data = dict(entry.data)
@@ -28,12 +36,20 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             payload.update(classify_legacy_entity_ids(hass, legacy_entity_ids))
         for key in ENTITY_SELECTION_CONFIG_KEYS:
             payload.setdefault(key, [])
+        payload.setdefault(
+            CONF_GRID_NET_POWER_SIGN_CONVENTION,
+            DEFAULT_GRID_NET_POWER_SIGN_CONVENTION,
+        )
+        payload.setdefault(
+            CONF_BATTERY_NET_POWER_SIGN_CONVENTION,
+            DEFAULT_BATTERY_NET_POWER_SIGN_CONVENTION,
+        )
 
     hass.config_entries.async_update_entry(
         entry,
         data=migrated_data,
         options=migrated_options,
-        version=2,
+        version=3,
     )
     return True
 

@@ -22,6 +22,8 @@ async def async_get_config_entry_diagnostics(hass: HomeAssistant, entry: ConfigE
             "topic_prefix": settings.topic_prefix,
             "mqtt_password": "<redacted>",
             "selected_entities_by_role": settings.selected_entities_by_role,
+            "grid_net_power_sign_convention": settings.grid_net_power_sign_convention,
+            "battery_net_power_sign_convention": settings.battery_net_power_sign_convention,
             "telemetry_interval_seconds": settings.telemetry_interval_seconds,
             "heartbeat_interval_seconds": settings.heartbeat_interval_seconds,
         },

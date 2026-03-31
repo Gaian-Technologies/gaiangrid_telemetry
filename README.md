@@ -102,9 +102,12 @@ In the form, enter:
 
 - Enrollment token
 - PCC voltage sensors when available
+- Additional voltage sensors if you have smart plugs or outlet monitors
 - PCC frequency sensors when available
+- Additional frequency sensors if you have smart plugs or outlet monitors
 - PCC power sensors if you have inverter or main-switchboard measurements
-- Additional electricity power sensors if they are useful to share
+- Additional downstream power sensors if they are useful to share
+- Battery power sensors if you have battery telemetry
 - Fallback telemetry interval
 - Fallback heartbeat interval
 
@@ -114,8 +117,9 @@ consumer's electrical circuit connects to the utility grid.
 For many grid-tied inverters, inverter voltage and inverter frequency are PCC
 measurements. For CTs or a meter at the main switchboard, the switchboard-side
 measurements are usually the PCC measurements. Smart plugs on outlets do not
-qualify as PCC voltage or PCC frequency, but they can still be shared as
-additional power sensors where useful.
+qualify as PCC voltage or PCC frequency, but they can still be shared in the
+additional voltage, additional frequency, and additional power fields where
+useful.
 
 ## Supported Setup
 
@@ -131,28 +135,41 @@ The setup flow asks only for:
 - the fallback heartbeat interval
 
 Not all sensor fields are required. PCC voltage, frequency, and power are
-preferred if available, but other useful power sensors can still be shared.
+preferred if available, but additional outlet-level sensors and battery
+sensors can still be shared in their matching fields.
 
 ## Supported Sensors
 
 Gaian Grid currently accepts electricity sensors in these roles:
 
 - PCC voltage sensors: `V`
+- additional voltage sensors: `V`
 - PCC frequency sensors: `Hz`
+- additional frequency sensors: `Hz`
 - PCC net power sensors: `W`
-  - use these when positive means import and negative means export
+  - choose the sign convention in the setup form so Gaian Grid knows whether
+    import is reported as positive or negative
 - PCC import power sensors: `W`
 - PCC export power sensors: `W`
+- battery net power sensors: `W`
+  - choose the sign convention in the setup form so Gaian Grid knows whether
+    charging is reported as positive or negative
+- battery charging power sensors: `W`
+- battery discharging power sensors: `W`
 - additional electricity power sensors: `W`
 - reactive power sensors: `var`
 
 PCC power is the preferred input for Gaian Grid public summaries. Additional
-electricity power sensors are still useful for research and future analysis,
-but they are not treated as PCC import/export totals.
+electricity power sensors are assumed to sit downstream of the PCC when PCC
+power is also provided. They are useful for research and future analysis, but
+they are not treated as PCC import/export totals. Battery power sensors should
+go in the dedicated battery fields, not in Additional power sensors.
 
 Do not select duplicate sensors for the same PCC measurement. If you already
 have separate PCC import and export sensors, use those instead of also
-selecting a PCC net power sensor.
+selecting a PCC net power sensor. The same rule applies to battery power: use
+either Battery power (net) or separate Battery charging/discharging sensors,
+not both.
 
 ## Notes
 
