@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Set up Gaian Grid Telemetry",
-        "description": "In electric power distribution, the point of common coupling (PCC) is where a consumer's electrical circuit connects to the utility grid. Choose any useful electricity sensors you have. PCC sensors are preferred when available, but outlet smart plugs and battery sensors can also help when placed in the matching fields.",
+        "description": "In electric power distribution, the point of common coupling (PCC) is where a consumer's electrical circuit connects to the utility grid. Choose any useful electricity sensors you have. PCC sensors are preferred when available, but outlet smart plugs and battery sensors can also help when placed in the matching fields. Everything is optional and even a single outlet voltage measurement helps.",
         "data": {
           "enrollment_token": "Enrollment token",
           "grid_voltage_entity_ids": "PCC voltage",
@@ -26,19 +26,19 @@
         "data_description": {
           "enrollment_token": "Enter the token from https://gaiangrid.com/enroll.",
           "grid_voltage_entity_ids": "Preferred if available. Choose one or more voltage sensors at the PCC in V. For many grid-tied inverters this is inverter voltage. For CTs or a meter at the main switchboard, use the PCC-side voltage. Smart plugs on outlets do not qualify as PCC voltage.",
-          "additional_voltage_entity_ids": "Optional. Use for other voltage sensors in V that are not at the PCC, such as smart plugs or outlet monitors.",
+          "additional_voltage_entity_ids": "Use for other voltage sensors in V that are not at the PCC, such as smart plugs or outlet monitors.",
           "grid_frequency_entity_ids": "Preferred if available. Choose one or more frequency sensors at the PCC in Hz. For many grid-tied inverters this is inverter frequency. Smart plugs on outlets do not qualify as PCC frequency.",
-          "additional_frequency_entity_ids": "Optional. Use for other frequency sensors in Hz that are not at the PCC, such as smart plugs or outlet monitors.",
+          "additional_frequency_entity_ids": "Use for other frequency sensors in Hz that are not at the PCC, such as smart plugs or outlet monitors.",
           "grid_net_power_entity_ids": "Use this if you have a single net PCC power sensor in W. This is often from CTs at the main switchboard. Do not also fill in PCC import power or PCC export power.",
           "grid_net_power_sign_convention": "Only used for PCC power (net). Choose whether your net PCC power sensor reports import as positive or negative.",
           "grid_import_power_entity_ids": "Use this if you have one or more separate PCC import sensors in W, often from a meter or CT setup at the main switchboard.",
           "grid_export_power_entity_ids": "Use this if you have one or more separate PCC export sensors in W, often from a meter or CT setup at the main switchboard.",
-          "additional_power_entity_ids": "Optional. Use for other useful downstream power sensors in W, such as smart plugs, inverter AC output, EV charging, or circuit loads. If PCC power is also provided, these are assumed to sit downstream of the PCC and are not added into PCC totals.",
-          "battery_net_power_entity_ids": "Optional. Use this if you have a single battery power sensor in W. Do not also fill in Battery charging power or Battery discharging power.",
+          "additional_power_entity_ids": "Use for other useful downstream power sensors in W, such as smart plugs, inverter AC output, EV charging, or circuit loads. If PCC power is also provided, these are assumed to sit downstream of the PCC and are not added into PCC totals.",
+          "battery_net_power_entity_ids": "Use this if you have a single battery power sensor in W. Do not also fill in Battery charging power or Battery discharging power.",
           "battery_net_power_sign_convention": "Only used for Battery power (net). Choose whether your battery sensor reports charging as positive or negative.",
-          "battery_charge_power_entity_ids": "Optional. Use this if you have one or more separate battery charging sensors in W.",
-          "battery_discharge_power_entity_ids": "Optional. Use this if you have one or more separate battery discharging sensors in W.",
-          "reactive_power_entity_ids": "Optional. Choose one or more sensors measuring reactive power in var.",
+          "battery_charge_power_entity_ids": "Use this if you have one or more separate battery charging sensors in W.",
+          "battery_discharge_power_entity_ids": "Use this if you have one or more separate battery discharging sensors in W.",
+          "reactive_power_entity_ids": "Choose one or more sensors measuring reactive power in var.",
           "telemetry_interval_seconds": "Advanced. Used as the local publish interval until Gaian Grid sends managed settings.",
           "heartbeat_interval_seconds": "Advanced. Used as the local heartbeat interval until Gaian Grid sends managed settings."
         }
@@ -73,19 +73,19 @@
         },
         "data_description": {
           "grid_voltage_entity_ids": "Preferred if available. Choose one or more voltage sensors at the PCC in V. For many grid-tied inverters this is inverter voltage. For CTs or a meter at the main switchboard, use the PCC-side voltage. Smart plugs on outlets do not qualify as PCC voltage.",
-          "additional_voltage_entity_ids": "Optional. Use for other voltage sensors in V that are not at the PCC, such as smart plugs or outlet monitors.",
+          "additional_voltage_entity_ids": "Use for other voltage sensors in V that are not at the PCC, such as smart plugs or outlet monitors.",
           "grid_frequency_entity_ids": "Preferred if available. Choose one or more frequency sensors at the PCC in Hz. For many grid-tied inverters this is inverter frequency. Smart plugs on outlets do not qualify as PCC frequency.",
-          "additional_frequency_entity_ids": "Optional. Use for other frequency sensors in Hz that are not at the PCC, such as smart plugs or outlet monitors.",
+          "additional_frequency_entity_ids": "Use for other frequency sensors in Hz that are not at the PCC, such as smart plugs or outlet monitors.",
           "grid_net_power_entity_ids": "Use this if you have a single net PCC power sensor in W. This is often from CTs at the main switchboard. Do not also fill in PCC import power or PCC export power.",
           "grid_net_power_sign_convention": "Only used for PCC power (net). Choose whether your net PCC power sensor reports import as positive or negative.",
           "grid_import_power_entity_ids": "Use this if you have one or more separate PCC import sensors in W, often from a meter or CT setup at the main switchboard.",
           "grid_export_power_entity_ids": "Use this if you have one or more separate PCC export sensors in W, often from a meter or CT setup at the main switchboard.",
-          "additional_power_entity_ids": "Optional. Use for other useful downstream power sensors in W, such as smart plugs, inverter AC output, EV charging, or circuit loads. If PCC power is also provided, these are assumed to sit downstream of the PCC and are not added into PCC totals.",
-          "battery_net_power_entity_ids": "Optional. Use this if you have a single battery power sensor in W. Do not also fill in Battery charging power or Battery discharging power.",
+          "additional_power_entity_ids": "Use for other useful downstream power sensors in W, such as smart plugs, inverter AC output, EV charging, or circuit loads. If PCC power is also provided, these are assumed to sit downstream of the PCC and are not added into PCC totals.",
+          "battery_net_power_entity_ids": "Use this if you have a single battery power sensor in W. Do not also fill in Battery charging power or Battery discharging power.",
           "battery_net_power_sign_convention": "Only used for Battery power (net). Choose whether your battery sensor reports charging as positive or negative.",
-          "battery_charge_power_entity_ids": "Optional. Use this if you have one or more separate battery charging sensors in W.",
-          "battery_discharge_power_entity_ids": "Optional. Use this if you have one or more separate battery discharging sensors in W.",
-          "reactive_power_entity_ids": "Optional. Choose one or more sensors measuring reactive power in var.",
+          "battery_charge_power_entity_ids": "Use this if you have one or more separate battery charging sensors in W.",
+          "battery_discharge_power_entity_ids": "Use this if you have one or more separate battery discharging sensors in W.",
+          "reactive_power_entity_ids": "Choose one or more sensors measuring reactive power in var.",
           "telemetry_interval_seconds": "Advanced. Used as the local publish interval until Gaian Grid sends managed settings.",
           "heartbeat_interval_seconds": "Advanced. Used as the local heartbeat interval until Gaian Grid sends managed settings."
         }
