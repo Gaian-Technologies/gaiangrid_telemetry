@@ -31,10 +31,10 @@ from .const import (
     DEFAULT_TOPIC_PREFIX,
     ENTITY_ROLE_TO_CONFIG_KEY,
     FIXED_HUB_URL,
-    SIGNAL_ROLE_GRID_EXPORT_POWER,
     SIGNAL_ROLE_GRID_FREQUENCY,
-    SIGNAL_ROLE_GRID_IMPORT_POWER,
-    SIGNAL_ROLE_GRID_NET_POWER,
+    SIGNAL_ROLE_GRID_POWER_EXPORT,
+    SIGNAL_ROLE_GRID_POWER_IMPORT,
+    SIGNAL_ROLE_GRID_POWER_NET,
     SIGNAL_ROLE_GRID_VOLTAGE,
     SIGNAL_ROLE_POWER_AUX,
     SIGNAL_ROLE_REACTIVE_POWER,
@@ -82,7 +82,7 @@ def classify_legacy_entity_ids(hass: HomeAssistant, entity_ids: list[str] | tupl
     return selections
 
 
-def _role_entity_ids(hass: HomeAssistant, data: dict[str, Any], key: str) -> tuple[str, ...]:
+def _role_entity_ids(data: dict[str, Any], key: str) -> tuple[str, ...]:
     return normalize_entity_ids(data.get(key, []))
 
 
@@ -123,9 +123,9 @@ class EntrySettings:
         for signal_role, entity_ids in (
             (SIGNAL_ROLE_GRID_VOLTAGE, self.grid_voltage_entity_ids),
             (SIGNAL_ROLE_GRID_FREQUENCY, self.grid_frequency_entity_ids),
-            (SIGNAL_ROLE_GRID_NET_POWER, self.grid_net_power_entity_ids),
-            (SIGNAL_ROLE_GRID_IMPORT_POWER, self.grid_import_power_entity_ids),
-            (SIGNAL_ROLE_GRID_EXPORT_POWER, self.grid_export_power_entity_ids),
+            (SIGNAL_ROLE_GRID_POWER_NET, self.grid_net_power_entity_ids),
+            (SIGNAL_ROLE_GRID_POWER_IMPORT, self.grid_import_power_entity_ids),
+            (SIGNAL_ROLE_GRID_POWER_EXPORT, self.grid_export_power_entity_ids),
             (SIGNAL_ROLE_POWER_AUX, self.additional_power_entity_ids),
             (SIGNAL_ROLE_REACTIVE_POWER, self.reactive_power_entity_ids),
         ):
@@ -170,13 +170,13 @@ class EntrySettings:
             topic_prefix=str(normalized_data.get(CONF_TOPIC_PREFIX, DEFAULT_TOPIC_PREFIX)).strip("/"),
             mqtt_username=str(normalized_data[CONF_MQTT_USERNAME]).strip(),
             mqtt_password=str(normalized_data[CONF_MQTT_PASSWORD]),
-            grid_voltage_entity_ids=_role_entity_ids(hass, normalized_data, CONF_GRID_VOLTAGE_ENTITY_IDS),
-            grid_frequency_entity_ids=_role_entity_ids(hass, normalized_data, CONF_GRID_FREQUENCY_ENTITY_IDS),
-            grid_net_power_entity_ids=_role_entity_ids(hass, normalized_data, CONF_GRID_NET_POWER_ENTITY_IDS),
-            grid_import_power_entity_ids=_role_entity_ids(hass, normalized_data, CONF_GRID_IMPORT_POWER_ENTITY_IDS),
-            grid_export_power_entity_ids=_role_entity_ids(hass, normalized_data, CONF_GRID_EXPORT_POWER_ENTITY_IDS),
-            additional_power_entity_ids=_role_entity_ids(hass, normalized_data, CONF_ADDITIONAL_POWER_ENTITY_IDS),
-            reactive_power_entity_ids=_role_entity_ids(hass, normalized_data, CONF_REACTIVE_POWER_ENTITY_IDS),
+            grid_voltage_entity_ids=_role_entity_ids(normalized_data, CONF_GRID_VOLTAGE_ENTITY_IDS),
+            grid_frequency_entity_ids=_role_entity_ids(normalized_data, CONF_GRID_FREQUENCY_ENTITY_IDS),
+            grid_net_power_entity_ids=_role_entity_ids(normalized_data, CONF_GRID_NET_POWER_ENTITY_IDS),
+            grid_import_power_entity_ids=_role_entity_ids(normalized_data, CONF_GRID_IMPORT_POWER_ENTITY_IDS),
+            grid_export_power_entity_ids=_role_entity_ids(normalized_data, CONF_GRID_EXPORT_POWER_ENTITY_IDS),
+            additional_power_entity_ids=_role_entity_ids(normalized_data, CONF_ADDITIONAL_POWER_ENTITY_IDS),
+            reactive_power_entity_ids=_role_entity_ids(normalized_data, CONF_REACTIVE_POWER_ENTITY_IDS),
             telemetry_interval_seconds=_positive_int(
                 normalized_data.get(CONF_TELEMETRY_INTERVAL_SECONDS),
                 DEFAULT_TELEMETRY_INTERVAL_SECONDS,
