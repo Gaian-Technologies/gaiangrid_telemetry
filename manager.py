@@ -12,8 +12,13 @@ from homeassistant.const import STATE_UNAVAILABLE, STATE_UNKNOWN
 from homeassistant.core import HomeAssistant, State
 from homeassistant.helpers.event import async_track_time_interval
 
-from .const import TELEMETRY_ATTRIBUTE_ALLOWLIST
-from .models import DesiredConfig, EntrySettings
+from .const import (
+    ATTR_GAIAN_POWER_SIGN_CONVENTION,
+    ATTR_GAIAN_SIGNAL_ROLE,
+    SIGNAL_ROLE_GRID_POWER_NET,
+    TELEMETRY_ATTRIBUTE_ALLOWLIST,
+)
+from .models import DesiredConfig, EntrySettings, TelemetrySelection
 from .mqtt_client import TelemetryMqttClient
 from .protocol import (
     DESIRED_SCHEMA,
@@ -164,32 +169,41 @@ class TelemetryManager:
 
     def _build_telemetry_items(self) -> list[dict[str, Any]]:
         return [
-            self._serialize_state(entity_id, self.hass.states.get(entity_id))
-            for entity_id in self.settings.entity_ids
+            self._serialize_state(selection, self.hass.states.get(selection.entity_id))
+            for selection in self.settings.selected_entities
         ]
 
-    def _serialize_state(self, entity_id: str, state: State | None) -> dict[str, Any]:
+    def _serialize_state(self, selection: TelemetrySelection, state: State | None) -> dict[str, Any]:
+        gaian_attributes = {
+            ATTR_GAIAN_SIGNAL_ROLE: selection.signal_role,
+        }
+        if selection.signal_role == SIGNAL_ROLE_GRID_POWER_NET:
+            gaian_attributes[ATTR_GAIAN_POWER_SIGN_CONVENTION] = self.settings.grid_net_power_sign_convention
+
         if state is None:
             return {
-                "entity_id": entity_id,
+                "entity_id": selection.entity_id,
                 "state": STATE_UNKNOWN,
                 "available": False,
-                "attributes": {},
+                "attributes": gaian_attributes,
                 "last_changed": None,
                 "last_updated": None,
             }
 
+        attributes = {
+            # Only allowlisted attributes are exported so telemetry stays
+            # predictable and does not leak large or sensitive state blobs.
+            key: _json_safe(state.attributes[key])
+            for key in TELEMETRY_ATTRIBUTE_ALLOWLIST
+            if key in state.attributes
+        }
+        attributes.update(gaian_attributes)
+
         return {
-            "entity_id": entity_id,
+            "entity_id": selection.entity_id,
             "state": state.state,
             "available": state.state not in (STATE_UNKNOWN, STATE_UNAVAILABLE),
-            "attributes": {
-                # Only allowlisted attributes are exported so telemetry stays
-                # predictable and does not leak large or sensitive state blobs.
-                key: _json_safe(state.attributes[key])
-                for key in TELEMETRY_ATTRIBUTE_ALLOWLIST
-                if key in state.attributes
-            },
+            "attributes": attributes,
             "last_changed": state.last_changed.isoformat(),
             "last_updated": state.last_updated.isoformat(),
         }
@@ -201,7 +215,8 @@ class TelemetryManager:
             "host": self.settings.host,
             "site_id": self.settings.site_id,
             "topic_prefix": self.settings.topic_prefix,
-            "selected_entity_count": len(self.settings.entity_ids),
+            "selected_entity_count": len(self.settings.all_entity_ids),
+            "selected_entities_by_role": self.settings.selected_entities_by_role,
             "desired_config": {
                 "enabled": self._desired.enabled,
                 "telemetry_interval_seconds": self._desired.telemetry_interval_seconds,

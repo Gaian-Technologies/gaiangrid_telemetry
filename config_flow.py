@@ -12,19 +12,31 @@ from homeassistant.helpers import selector
 
 from .entity_validation import validate_selected_entities
 from .const import (
+    CONF_ADDITIONAL_POWER_ENTITY_IDS,
+    CONF_ADDITIONAL_FREQUENCY_ENTITY_IDS,
+    CONF_ADDITIONAL_VOLTAGE_ENTITY_IDS,
     CONF_ENROLLMENT_TOKEN,
-    CONF_ENTITY_IDS,
+    CONF_GRID_EXPORT_POWER_ENTITY_IDS,
+    CONF_GRID_FREQUENCY_ENTITY_IDS,
+    CONF_GRID_IMPORT_POWER_ENTITY_IDS,
+    CONF_GRID_NET_POWER_ENTITY_IDS,
+    CONF_GRID_NET_POWER_SIGN_CONVENTION,
+    CONF_GRID_VOLTAGE_ENTITY_IDS,
     CONF_HEARTBEAT_INTERVAL_SECONDS,
     CONF_HUB_URL,
     CONF_MQTT_PASSWORD,
     CONF_MQTT_USERNAME,
+    DEFAULT_GRID_NET_POWER_SIGN_CONVENTION,
     CONF_SITE_ID,
     CONF_TELEMETRY_INTERVAL_SECONDS,
     CONF_TOPIC_PREFIX,
     DEFAULT_HEARTBEAT_INTERVAL_SECONDS,
     DEFAULT_TELEMETRY_INTERVAL_SECONDS,
     DOMAIN,
+    ENTITY_SELECTION_CONFIG_KEYS,
     FIXED_HUB_URL,
+    GRID_POWER_SIGN_IMPORT_NEGATIVE_EXPORT_POSITIVE,
+    GRID_POWER_SIGN_IMPORT_POSITIVE_EXPORT_NEGATIVE,
 )
 from .hub_client import EnrollmentError, async_enroll_managed_site
 from .models import EntrySettings, normalize_entity_ids
@@ -42,7 +54,7 @@ class CannotConnectError(Exception):
 class HATelemetryConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Create, reauth, and reconfigure entries for a single managed site."""
 
-    VERSION = 1
+    VERSION = 3
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None):
         errors: dict[str, str] = {}
@@ -121,26 +133,73 @@ def _entry_defaults(entry: config_entries.ConfigEntry) -> dict[str, Any]:
     return merged
 
 
+def _entity_selector(defaults: dict[str, Any], key: str):
+    return vol.Optional(
+        key,
+        default=defaults.get(key, []),
+    ), selector.EntitySelector(
+        selector.EntitySelectorConfig(
+            domain=["sensor"],
+            multiple=True,
+        )
+    )
+
+
 def _build_shared_entity_fields(defaults: dict[str, Any]) -> dict:
-    return {
-        vol.Required(
-            CONF_ENTITY_IDS,
-            default=defaults.get(CONF_ENTITY_IDS, []),
-        ): selector.EntitySelector(
-            selector.EntitySelectorConfig(
-                domain=["sensor"],
-                multiple=True,
-            )
+    fields: dict = {}
+    for key in (
+        CONF_GRID_VOLTAGE_ENTITY_IDS,
+        CONF_ADDITIONAL_VOLTAGE_ENTITY_IDS,
+        CONF_GRID_FREQUENCY_ENTITY_IDS,
+        CONF_ADDITIONAL_FREQUENCY_ENTITY_IDS,
+        CONF_GRID_NET_POWER_ENTITY_IDS,
+    ):
+        schema_key, schema_selector = _entity_selector(defaults, key)
+        fields[schema_key] = schema_selector
+
+    fields[vol.Required(
+        CONF_GRID_NET_POWER_SIGN_CONVENTION,
+        default=defaults.get(
+            CONF_GRID_NET_POWER_SIGN_CONVENTION,
+            DEFAULT_GRID_NET_POWER_SIGN_CONVENTION,
         ),
-        vol.Required(
-            CONF_TELEMETRY_INTERVAL_SECONDS,
-            default=defaults.get(CONF_TELEMETRY_INTERVAL_SECONDS, DEFAULT_TELEMETRY_INTERVAL_SECONDS),
-        ): selector.NumberSelector(selector.NumberSelectorConfig(min=1, mode=selector.NumberSelectorMode.BOX)),
-        vol.Required(
-            CONF_HEARTBEAT_INTERVAL_SECONDS,
-            default=defaults.get(CONF_HEARTBEAT_INTERVAL_SECONDS, DEFAULT_HEARTBEAT_INTERVAL_SECONDS),
-        ): selector.NumberSelector(selector.NumberSelectorConfig(min=1, mode=selector.NumberSelectorMode.BOX)),
-    }
+    )] = selector.SelectSelector(
+        selector.SelectSelectorConfig(
+            options=[
+                {
+                    "value": GRID_POWER_SIGN_IMPORT_POSITIVE_EXPORT_NEGATIVE,
+                    "label": "Import positive, export negative",
+                },
+                {
+                    "value": GRID_POWER_SIGN_IMPORT_NEGATIVE_EXPORT_POSITIVE,
+                    "label": "Import negative, export positive",
+                },
+            ],
+            mode=selector.SelectSelectorMode.DROPDOWN,
+        )
+    )
+
+    for key in (
+        CONF_GRID_IMPORT_POWER_ENTITY_IDS,
+        CONF_GRID_EXPORT_POWER_ENTITY_IDS,
+        CONF_ADDITIONAL_POWER_ENTITY_IDS,
+    ):
+        schema_key, schema_selector = _entity_selector(defaults, key)
+        fields[schema_key] = schema_selector
+
+    fields[vol.Required(
+        CONF_TELEMETRY_INTERVAL_SECONDS,
+        default=defaults.get(CONF_TELEMETRY_INTERVAL_SECONDS, DEFAULT_TELEMETRY_INTERVAL_SECONDS),
+    )] = selector.NumberSelector(
+        selector.NumberSelectorConfig(min=1, mode=selector.NumberSelectorMode.BOX)
+    )
+    fields[vol.Required(
+        CONF_HEARTBEAT_INTERVAL_SECONDS,
+        default=defaults.get(CONF_HEARTBEAT_INTERVAL_SECONDS, DEFAULT_HEARTBEAT_INTERVAL_SECONDS),
+    )] = selector.NumberSelector(
+        selector.NumberSelectorConfig(min=1, mode=selector.NumberSelectorMode.BOX)
+    )
+    return fields
 
 
 def _build_user_schema(defaults: dict[str, Any]) -> vol.Schema:
@@ -169,28 +228,59 @@ def _build_reconfigure_schema(defaults: dict[str, Any]) -> vol.Schema:
     )
 
 
-def _validate_entity_selection(hass, user_input: dict[str, Any]) -> tuple[str, ...]:
-    entity_ids = normalize_entity_ids(user_input.get(CONF_ENTITY_IDS, []))
-    if not entity_ids:
-        raise EntitySelectionError("entity_ids_required")
-    error_key = validate_selected_entities(hass, entity_ids)
+def _normalized_entity_selections(user_input: dict[str, Any]) -> dict[str, tuple[str, ...]]:
+    return {
+        key: normalize_entity_ids(user_input.get(key, []))
+        for key in ENTITY_SELECTION_CONFIG_KEYS
+    }
+
+
+def _validate_entity_selection(hass, user_input: dict[str, Any]) -> dict[str, tuple[str, ...]]:
+    selections = _normalized_entity_selections(user_input)
+    if not any(selections.values()):
+        raise EntitySelectionError("sensor_selection_required")
+
+    seen: dict[str, str] = {}
+    for key, entity_ids in selections.items():
+        for entity_id in entity_ids:
+            if entity_id in seen:
+                raise EntitySelectionError("duplicate_sensor_selection")
+            seen[entity_id] = key
+
+    if selections[CONF_GRID_NET_POWER_ENTITY_IDS] and (
+        selections[CONF_GRID_IMPORT_POWER_ENTITY_IDS] or selections[CONF_GRID_EXPORT_POWER_ENTITY_IDS]
+    ):
+        raise EntitySelectionError("conflicting_grid_power_selection")
+
+    error_key = validate_selected_entities(hass, selections)
     if error_key:
         raise EntitySelectionError(error_key)
-    return entity_ids
+    return selections
 
 
 def _normalize_shared(hass, user_input: dict[str, Any]) -> dict[str, Any]:
-    entity_ids = _validate_entity_selection(hass, user_input)
+    selections = _validate_entity_selection(hass, user_input)
     return {
-        CONF_ENTITY_IDS: list(entity_ids),
-        CONF_TELEMETRY_INTERVAL_SECONDS: int(user_input.get(CONF_TELEMETRY_INTERVAL_SECONDS, DEFAULT_TELEMETRY_INTERVAL_SECONDS)),
-        CONF_HEARTBEAT_INTERVAL_SECONDS: int(user_input.get(CONF_HEARTBEAT_INTERVAL_SECONDS, DEFAULT_HEARTBEAT_INTERVAL_SECONDS)),
+        **{key: list(entity_ids) for key, entity_ids in selections.items()},
+        CONF_GRID_NET_POWER_SIGN_CONVENTION: str(
+            user_input.get(
+                CONF_GRID_NET_POWER_SIGN_CONVENTION,
+                DEFAULT_GRID_NET_POWER_SIGN_CONVENTION,
+            )
+        ).strip()
+        or DEFAULT_GRID_NET_POWER_SIGN_CONVENTION,
+        CONF_TELEMETRY_INTERVAL_SECONDS: int(
+            user_input.get(CONF_TELEMETRY_INTERVAL_SECONDS, DEFAULT_TELEMETRY_INTERVAL_SECONDS)
+        ),
+        CONF_HEARTBEAT_INTERVAL_SECONDS: int(
+            user_input.get(CONF_HEARTBEAT_INTERVAL_SECONDS, DEFAULT_HEARTBEAT_INTERVAL_SECONDS)
+        ),
     }
 
 
 def _managed_entry_data(local_settings: dict[str, Any], enrollment) -> dict[str, Any]:
-    # Entity selection and local publish cadence stay Home-Assistant-side; the
-    # hub owns broker identity and topic namespace.
+    # Local sensor selection stays Home-Assistant-side; the hub owns broker
+    # identity and topic namespace.
     return {
         CONF_HUB_URL: FIXED_HUB_URL,
         CONF_HOST: enrollment.mqtt_host,
@@ -224,8 +314,6 @@ async def _validate_reauth(hass, entry: config_entries.ConfigEntry, user_input: 
     enrollment_token = str(user_input[CONF_ENROLLMENT_TOKEN]).strip()
     site_id = str(entry.data[CONF_SITE_ID]).strip()
 
-    # Reauth rotates credentials for the existing site instead of provisioning a
-    # second site record for the same Home Assistant instance.
     enrollment = await async_enroll_managed_site(
         hass,
         hub_url=FIXED_HUB_URL,
@@ -234,10 +322,22 @@ async def _validate_reauth(hass, entry: config_entries.ConfigEntry, user_input: 
     )
 
     local_settings = {
-        CONF_ENTITY_IDS: list(entry.data.get(CONF_ENTITY_IDS, [])),
-        CONF_TELEMETRY_INTERVAL_SECONDS: int(entry.data.get(CONF_TELEMETRY_INTERVAL_SECONDS, DEFAULT_TELEMETRY_INTERVAL_SECONDS)),
-        CONF_HEARTBEAT_INTERVAL_SECONDS: int(entry.data.get(CONF_HEARTBEAT_INTERVAL_SECONDS, DEFAULT_HEARTBEAT_INTERVAL_SECONDS)),
+        key: list(entry.data.get(key, []))
+        for key in ENTITY_SELECTION_CONFIG_KEYS
     }
+    local_settings[CONF_GRID_NET_POWER_SIGN_CONVENTION] = str(
+        entry.data.get(
+            CONF_GRID_NET_POWER_SIGN_CONVENTION,
+            DEFAULT_GRID_NET_POWER_SIGN_CONVENTION,
+        )
+    ).strip() or DEFAULT_GRID_NET_POWER_SIGN_CONVENTION
+    local_settings[CONF_TELEMETRY_INTERVAL_SECONDS] = int(
+        entry.data.get(CONF_TELEMETRY_INTERVAL_SECONDS, DEFAULT_TELEMETRY_INTERVAL_SECONDS)
+    )
+    local_settings[CONF_HEARTBEAT_INTERVAL_SECONDS] = int(
+        entry.data.get(CONF_HEARTBEAT_INTERVAL_SECONDS, DEFAULT_HEARTBEAT_INTERVAL_SECONDS)
+    )
+
     updated = _managed_entry_data(local_settings, enrollment)
     settings = EntrySettings.from_mapping(hass, updated)
     if not await async_validate_connection(hass, settings):

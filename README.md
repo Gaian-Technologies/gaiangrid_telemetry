@@ -14,7 +14,7 @@ The supported setup path is:
 1. install the integration in Home Assistant
 2. request an enrollment token from `https://gaiangrid.com/enroll`
 3. enter the enrollment token
-4. select the supported electricity sensors to share
+4. choose the supported electricity sensors to share
 5. Home Assistant enrolls against `https://gaiangrid.com`
 6. Gaian Grid returns broker credentials and topic details
 7. Home Assistant connects directly to the MQTT broker over TLS
@@ -101,9 +101,23 @@ After Home Assistant has restarted:
 In the form, enter:
 
 - Enrollment token
-- Gaian Grid electricity sensors
+- PCC sensors if you have them
+- Additional voltage sensors if you have smart plugs or outlet monitors
+- Additional frequency sensors if you have smart plugs or outlet monitors
+- PCC power sensors if you have inverter or main-switchboard measurements
+- Additional downstream power sensors if they are useful to share
 - Fallback telemetry interval
 - Fallback heartbeat interval
+
+In electric power distribution, the point of common coupling (PCC) is where a
+consumer's electrical circuit connects to the utility grid.
+
+For many grid-tied inverters, inverter voltage and inverter frequency are PCC
+measurements. For CTs or a meter at the main switchboard, the switchboard-side
+measurements are usually the PCC measurements. Smart plugs on outlets do not
+qualify as PCC voltage or PCC frequency, but they can still be shared in the
+additional voltage, additional frequency, and additional power fields where
+useful.
 
 ## Supported Setup
 
@@ -111,21 +125,40 @@ This integration is fixed to the Gaian Grid public Hub URL:
 
 - `https://gaiangrid.com`
 
-The setup flow asks only for the enrollment token, the selected electricity
-sensors, and the fallback telemetry and heartbeat intervals.
+The setup flow asks only for:
+
+- the enrollment token
+- the selected electricity sensors
+- the fallback telemetry interval
+- the fallback heartbeat interval
+
+If you have PCC voltage, PCC frequency, or PCC power sensors, those are the
+preferred inputs and you do not need anything else. If you do not have PCC
+sensors, even a single voltage, frequency, or device power sensor is still
+helpful.
 
 ## Supported Sensors
 
-Gaian Grid currently accepts only electricity sensors with these units:
+Gaian Grid currently accepts electricity sensors in these roles:
 
-- voltage: `V`
-- frequency: `Hz`
-- reactive power: `var`
-- real power: `W`
+- PCC voltage sensors: `V`
+- additional voltage sensors: `V`
+- PCC frequency sensors: `Hz`
+- additional frequency sensors: `Hz`
+- PCC net power sensors: `W`
+  - choose the sign convention in the setup form so Gaian Grid knows whether
+    import is reported as positive or negative
+- PCC import power sensors: `W`
+- PCC export power sensors: `W`
+- additional electricity power sensors: `W`
 
-That means the initial integration selection is intentionally narrow. The
-target use case is grid-relevant electricity telemetry such as voltage,
-frequency, and real or reactive power measurements.
+PCC power is the preferred input for Gaian Grid Telemetry. If you do not have
+PCC power sensors, Gaian Grid sums the additional electricity power sensors to
+form the site power view.
+
+Do not select duplicate sensors for the same PCC measurement. If you already
+have separate PCC import and export sensors, use those instead of also
+selecting a PCC net power sensor.
 
 ## Notes
 
