@@ -15,9 +15,6 @@ from .const import (
     CONF_ADDITIONAL_POWER_ENTITY_IDS,
     CONF_ADDITIONAL_FREQUENCY_ENTITY_IDS,
     CONF_ADDITIONAL_VOLTAGE_ENTITY_IDS,
-    CONF_BATTERY_CHARGE_POWER_ENTITY_IDS,
-    CONF_BATTERY_DISCHARGE_POWER_ENTITY_IDS,
-    CONF_BATTERY_NET_POWER_ENTITY_IDS,
     CONF_BATTERY_NET_POWER_SIGN_CONVENTION,
     CONF_ENROLLMENT_TOKEN,
     CONF_GRID_EXPORT_POWER_ENTITY_IDS,
@@ -30,11 +27,8 @@ from .const import (
     CONF_HUB_URL,
     CONF_MQTT_PASSWORD,
     CONF_MQTT_USERNAME,
-    BATTERY_POWER_SIGN_CHARGE_NEGATIVE_DISCHARGE_POSITIVE,
-    BATTERY_POWER_SIGN_CHARGE_POSITIVE_DISCHARGE_NEGATIVE,
     DEFAULT_BATTERY_NET_POWER_SIGN_CONVENTION,
     DEFAULT_GRID_NET_POWER_SIGN_CONVENTION,
-    CONF_REACTIVE_POWER_ENTITY_IDS,
     CONF_SITE_ID,
     CONF_TELEMETRY_INTERVAL_SECONDS,
     CONF_TOPIC_PREFIX,
@@ -191,37 +185,6 @@ def _build_shared_entity_fields(defaults: dict[str, Any]) -> dict:
         CONF_GRID_IMPORT_POWER_ENTITY_IDS,
         CONF_GRID_EXPORT_POWER_ENTITY_IDS,
         CONF_ADDITIONAL_POWER_ENTITY_IDS,
-        CONF_BATTERY_NET_POWER_ENTITY_IDS,
-    ):
-        schema_key, schema_selector = _entity_selector(defaults, key)
-        fields[schema_key] = schema_selector
-
-    fields[vol.Required(
-        CONF_BATTERY_NET_POWER_SIGN_CONVENTION,
-        default=defaults.get(
-            CONF_BATTERY_NET_POWER_SIGN_CONVENTION,
-            DEFAULT_BATTERY_NET_POWER_SIGN_CONVENTION,
-        ),
-    )] = selector.SelectSelector(
-        selector.SelectSelectorConfig(
-            options=[
-                {
-                    "value": BATTERY_POWER_SIGN_CHARGE_POSITIVE_DISCHARGE_NEGATIVE,
-                    "label": "Charging positive, discharging negative",
-                },
-                {
-                    "value": BATTERY_POWER_SIGN_CHARGE_NEGATIVE_DISCHARGE_POSITIVE,
-                    "label": "Charging negative, discharging positive",
-                },
-            ],
-            mode=selector.SelectSelectorMode.DROPDOWN,
-        )
-    )
-
-    for key in (
-        CONF_BATTERY_CHARGE_POWER_ENTITY_IDS,
-        CONF_BATTERY_DISCHARGE_POWER_ENTITY_IDS,
-        CONF_REACTIVE_POWER_ENTITY_IDS,
     ):
         schema_key, schema_selector = _entity_selector(defaults, key)
         fields[schema_key] = schema_selector
@@ -290,11 +253,6 @@ def _validate_entity_selection(hass, user_input: dict[str, Any]) -> dict[str, tu
         selections[CONF_GRID_IMPORT_POWER_ENTITY_IDS] or selections[CONF_GRID_EXPORT_POWER_ENTITY_IDS]
     ):
         raise EntitySelectionError("conflicting_grid_power_selection")
-
-    if selections[CONF_BATTERY_NET_POWER_ENTITY_IDS] and (
-        selections[CONF_BATTERY_CHARGE_POWER_ENTITY_IDS] or selections[CONF_BATTERY_DISCHARGE_POWER_ENTITY_IDS]
-    ):
-        raise EntitySelectionError("conflicting_battery_power_selection")
 
     error_key = validate_selected_entities(hass, selections)
     if error_key:

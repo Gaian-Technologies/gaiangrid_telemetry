@@ -101,13 +101,11 @@ After Home Assistant has restarted:
 In the form, enter:
 
 - Enrollment token
-- PCC voltage sensors when available
+- PCC sensors if you have them
 - Additional voltage sensors if you have smart plugs or outlet monitors
-- PCC frequency sensors when available
 - Additional frequency sensors if you have smart plugs or outlet monitors
 - PCC power sensors if you have inverter or main-switchboard measurements
 - Additional downstream power sensors if they are useful to share
-- Battery power sensors if you have battery telemetry
 - Fallback telemetry interval
 - Fallback heartbeat interval
 
@@ -134,9 +132,10 @@ The setup flow asks only for:
 - the fallback telemetry interval
 - the fallback heartbeat interval
 
-Not all sensor fields are required. PCC voltage, frequency, and power are
-preferred if available, but additional outlet-level sensors and battery
-sensors can still be shared in their matching fields.
+If you have PCC voltage, PCC frequency, or PCC power sensors, those are the
+preferred inputs and you do not need anything else. If you do not have PCC
+sensors, even a single voltage, frequency, or device power sensor is still
+helpful.
 
 ## Supported Sensors
 
@@ -151,25 +150,16 @@ Gaian Grid currently accepts electricity sensors in these roles:
     import is reported as positive or negative
 - PCC import power sensors: `W`
 - PCC export power sensors: `W`
-- battery net power sensors: `W`
-  - choose the sign convention in the setup form so Gaian Grid knows whether
-    charging is reported as positive or negative
-- battery charging power sensors: `W`
-- battery discharging power sensors: `W`
 - additional electricity power sensors: `W`
-- reactive power sensors: `var`
 
 PCC power is the preferred input for Gaian Grid public summaries. Additional
 electricity power sensors are assumed to sit downstream of the PCC when PCC
 power is also provided. They are useful for research and future analysis, but
-they are not treated as PCC import/export totals. Battery power sensors should
-go in the dedicated battery fields, not in Additional power sensors.
+they are not treated as PCC import/export totals.
 
 Do not select duplicate sensors for the same PCC measurement. If you already
 have separate PCC import and export sensors, use those instead of also
-selecting a PCC net power sensor. The same rule applies to battery power: use
-either Battery power (net) or separate Battery charging/discharging sensors,
-not both.
+selecting a PCC net power sensor.
 
 ## Notes
 
