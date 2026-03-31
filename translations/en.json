@@ -28,7 +28,7 @@
           "grid_net_power_sign_convention": "Only used for PCC power (net). Choose whether your net PCC power sensor reports import as positive or negative.",
           "grid_import_power_entity_ids": "Use this if you have one or more separate PCC import sensors in W, often from a meter or CT setup at the main switchboard.",
           "grid_export_power_entity_ids": "Use this if you have one or more separate PCC export sensors in W, often from a meter or CT setup at the main switchboard.",
-          "additional_power_entity_ids": "Use for other power sensors in W when you do not have PCC power, such as smart plugs, inverter AC output, EV charging, or circuit loads.",
+          "additional_power_entity_ids": "Use for other power sensors in W when you do not have PCC power, such as smart plugs, EV charging, or circuit loads.",
           "telemetry_interval_seconds": "Advanced. Used as the local publish interval until Gaian Grid sends managed settings.",
           "heartbeat_interval_seconds": "Advanced. Used as the local heartbeat interval until Gaian Grid sends managed settings."
         }
@@ -65,7 +65,7 @@
           "grid_net_power_sign_convention": "Only used for PCC power (net). Choose whether your net PCC power sensor reports import as positive or negative.",
           "grid_import_power_entity_ids": "Use this if you have one or more separate PCC import sensors in W, often from a meter or CT setup at the main switchboard.",
           "grid_export_power_entity_ids": "Use this if you have one or more separate PCC export sensors in W, often from a meter or CT setup at the main switchboard.",
-          "additional_power_entity_ids": "Use for other power sensors in W when you do not have PCC power, such as smart plugs, inverter AC output, EV charging, or circuit loads.",
+          "additional_power_entity_ids": "Use for other power sensors in W when you do not have PCC power, such as smart plugs, EV charging, or circuit loads.",
           "telemetry_interval_seconds": "Advanced. Used as the local publish interval until Gaian Grid sends managed settings.",
           "heartbeat_interval_seconds": "Advanced. Used as the local heartbeat interval until Gaian Grid sends managed settings."
         }
