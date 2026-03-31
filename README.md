@@ -101,12 +101,21 @@ After Home Assistant has restarted:
 In the form, enter:
 
 - Enrollment token
-- Grid voltage sensors when available
-- Grid frequency sensors when available
-- Whole-grid power sensors if you have CTs or inverter/grid measurements
+- PCC voltage sensors when available
+- PCC frequency sensors when available
+- PCC power sensors if you have inverter or main-switchboard measurements
 - Additional electricity power sensors if they are useful to share
 - Fallback telemetry interval
 - Fallback heartbeat interval
+
+In electric power distribution, the point of common coupling (PCC) is where a
+consumer's electrical circuit connects to the utility grid.
+
+For many grid-tied inverters, inverter voltage and inverter frequency are PCC
+measurements. For CTs or a meter at the main switchboard, the switchboard-side
+measurements are usually the PCC measurements. Smart plugs on outlets do not
+qualify as PCC voltage or PCC frequency, but they can still be shared as
+additional power sensors where useful.
 
 ## Supported Setup
 
@@ -121,30 +130,29 @@ The setup flow asks only for:
 - the fallback telemetry interval
 - the fallback heartbeat interval
 
-Not all sensor fields are required. Whole-grid voltage, frequency, and power
-are preferred if available, but even a single voltage measurement from a smart
-plug helps.
+Not all sensor fields are required. PCC voltage, frequency, and power are
+preferred if available, but other useful power sensors can still be shared.
 
 ## Supported Sensors
 
 Gaian Grid currently accepts electricity sensors in these roles:
 
-- grid voltage sensors: `V`
-- grid frequency sensors: `Hz`
-- whole-grid net power sensors: `W`
+- PCC voltage sensors: `V`
+- PCC frequency sensors: `Hz`
+- PCC net power sensors: `W`
   - use these when positive means import and negative means export
-- whole-grid import power sensors: `W`
-- whole-grid export power sensors: `W`
+- PCC import power sensors: `W`
+- PCC export power sensors: `W`
 - additional electricity power sensors: `W`
 - reactive power sensors: `var`
 
-Whole-grid power is the preferred input for Gaian Grid public summaries.
-Additional electricity power sensors are still useful for research and future
-analysis, but they are not treated as whole-grid import/export totals.
+PCC power is the preferred input for Gaian Grid public summaries. Additional
+electricity power sensors are still useful for research and future analysis,
+but they are not treated as PCC import/export totals.
 
-Do not select duplicate sensors for the same whole-grid measurement. If you
-already have separate whole-grid import and export sensors, use those instead
-of also selecting a whole-grid net power sensor.
+Do not select duplicate sensors for the same PCC measurement. If you already
+have separate PCC import and export sensors, use those instead of also
+selecting a PCC net power sensor.
 
 ## Notes
 

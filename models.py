@@ -77,7 +77,7 @@ def classify_legacy_entity_ids(hass: HomeAssistant, entity_ids: list[str] | tupl
         elif unit == "W":
             # Legacy entries only had a single flat selector, so the least
             # surprising migration is to preserve existing Gaian Grid behavior
-            # and treat historical W sensors as whole-grid net power inputs.
+            # and treat historical W sensors as PCC net power inputs.
             selections[CONF_GRID_NET_POWER_ENTITY_IDS].append(entity_id)
     return selections
 
