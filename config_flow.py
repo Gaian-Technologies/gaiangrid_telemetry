@@ -39,7 +39,7 @@ from .const import (
     GRID_POWER_SIGN_IMPORT_POSITIVE_EXPORT_NEGATIVE,
 )
 from .hub_client import EnrollmentError, async_enroll_managed_site
-from .models import EntrySettings, normalize_entity_ids
+from .models import EntrySettings, display_site_title, normalize_entity_ids
 from .mqtt_client import async_validate_connection
 
 
@@ -54,9 +54,14 @@ class CannotConnectError(Exception):
 class HATelemetryConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Create, reauth, and reconfigure entries for a single managed site."""
 
-    VERSION = 3
+    VERSION = 5
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None):
+        if self._async_current_entries():
+            # Abort before attempting enrollment so a second setup flow cannot
+            # consume a token and create another backend site identity.
+            return self.async_abort(reason="single_site_supported")
+
         errors: dict[str, str] = {}
 
         if user_input is not None:
@@ -71,7 +76,10 @@ class HATelemetryConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             else:
                 await self.async_set_unique_id(cleaned[CONF_SITE_ID])
                 self._abort_if_unique_id_configured()
-                return self.async_create_entry(title=cleaned[CONF_SITE_ID], data=cleaned)
+                return self.async_create_entry(
+                    title=display_site_title(cleaned[CONF_SITE_ID]),
+                    data=cleaned,
+                )
 
         return self.async_show_form(
             step_id="user",
@@ -91,6 +99,10 @@ class HATelemetryConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             except CannotConnectError:
                 errors["base"] = "cannot_connect"
             else:
+                self.hass.config_entries.async_update_entry(
+                    entry,
+                    title=display_site_title(str(updates[CONF_SITE_ID])),
+                )
                 return self.async_update_reload_and_abort(
                     entry,
                     data_updates=updates,
@@ -114,6 +126,10 @@ class HATelemetryConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             except EntitySelectionError as err:
                 errors["base"] = str(err)
             else:
+                self.hass.config_entries.async_update_entry(
+                    entry,
+                    title=display_site_title(str(entry.data[CONF_SITE_ID])),
+                )
                 return self.async_update_reload_and_abort(
                     entry,
                     data_updates=updates,

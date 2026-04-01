@@ -98,6 +98,10 @@ After Home Assistant has restarted:
 5. Search for `Gaian Grid Telemetry`.
 6. Select the integration and continue through the setup form.
 
+Gaian Grid currently supports one configured tree per Home Assistant instance.
+If you need to change the sensors later, reconfigure the existing entry instead
+of adding a second one.
+
 In the form, enter:
 
 - Enrollment token

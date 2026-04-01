@@ -92,7 +92,8 @@
       "unsupported_mqtt_transport": "The hub returned an unsupported MQTT transport. This integration supports MQTT over TLS on TCP only."
     },
     "abort": {
-      "already_configured": "This site ID is already configured."
+      "already_configured": "This site ID is already configured.",
+      "single_site_supported": "Only one Gaian tree can be configured per Home Assistant instance. Reconfigure the existing tree instead."
     }
   }
 }

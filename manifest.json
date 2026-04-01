@@ -6,7 +6,8 @@
   "codeowners": ["@Gaian-Technologies"],
   "config_flow": true,
   "integration_type": "service",
+  "single_config_entry": true,
   "loggers": ["paho"],
   "requirements": ["paho-mqtt>=2.1.0,<3.0.0"],
-  "version": "0.1.0"
+  "version": "0.1.1"
 }
