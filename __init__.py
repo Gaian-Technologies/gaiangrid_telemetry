@@ -10,9 +10,10 @@ from .const import (
     DEFAULT_GRID_NET_POWER_SIGN_CONVENTION,
     DOMAIN,
     ENTITY_SELECTION_CONFIG_KEYS,
+    CONF_SITE_ID,
 )
 from .manager import TelemetryManager
-from .models import EntrySettings, classify_legacy_entity_ids
+from .models import EntrySettings, classify_legacy_entity_ids, display_site_title
 from .mqtt_client import MqttAuthenticationError, MqttConnectionError
 
 
@@ -22,7 +23,7 @@ async def async_setup(hass: HomeAssistant, _config: dict) -> bool:
 
 
 async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    if entry.version >= 4:
+    if entry.version >= 5:
         return True
 
     migrated_data = dict(entry.data)
@@ -48,7 +49,8 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         entry,
         data=migrated_data,
         options=migrated_options,
-        version=4,
+        title=display_site_title(str(migrated_data.get(CONF_SITE_ID, entry.title))),
+        version=5,
     )
     return True
 
@@ -56,6 +58,9 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data.setdefault(DOMAIN, {})
     settings = EntrySettings.from_entry(hass, entry)
+    desired_title = display_site_title(settings.site_id)
+    if entry.title != desired_title:
+        hass.config_entries.async_update_entry(entry, title=desired_title)
     manager = TelemetryManager(hass, entry, settings)
 
     try:

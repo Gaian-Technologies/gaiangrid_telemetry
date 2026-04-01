@@ -52,6 +52,15 @@ def normalize_entity_ids(entity_ids: list[str] | tuple[str, ...]) -> tuple[str, 
     return tuple(sorted(set(str(entity_id).strip() for entity_id in entity_ids if str(entity_id).strip())))
 
 
+def display_site_title(site_id: str) -> str:
+    """Return the user-facing Home Assistant title for a managed site."""
+
+    cleaned = str(site_id).strip()
+    if cleaned.startswith("site-"):
+        return f"tree-{cleaned[5:]}"
+    return cleaned
+
+
 def _positive_int(value: Any, default: int) -> int:
     try:
         parsed = int(value)
